@@ -1,0 +1,21 @@
+# Ignore environment and build files
+.env
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+
+# macOS files
+.DS_Store
+
+# Virtual environments
+venv/
+env/
+
+# Ignore Docker configuration (optional)
+Dockerfile
+
+.env
+Dockerfile
