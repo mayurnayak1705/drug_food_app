@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Drug–Food Interaction Checker</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>💊 Drug–Food Interaction Checker</h1>
+    <p class="subtitle">Ask about any medicine and see its food interactions instantly.</p>
+
+    <form id="query-form">
+      <input
+        type="text"
+        id="description"
+        name="description"
+        placeholder="e.g., Can I take Dolo 650 after tea?"
+        required
+      />
+      <button type="submit" id="submit-btn">
+        <span id="btn-text">Check</span>
+        <span id="loader" class="loader hidden"></span>
+      </button>
+    </form>
+
+    <div id="result" class="card hidden">
+      <h2>Result</h2>
+      <div class="result-row"><strong>Brand Name:</strong> <span id="brand_name">-</span></div>
+      <div class="result-row"><strong>Generic Name:</strong> <span id="generic_name">-</span></div>
+      <div class="result-row"><strong>Interactions:</strong>
+        <ul id="interactions"></ul>
+      </div>
+      <div class="result-row"><strong>AI Answer:</strong>
+        <p id="answer"></p>
+      </div>
+    </div>
+
+    <footer>
+      <p>⚕️ For informational purposes only — not a substitute for professional medical advice.</p>
+    </footer>
+  </div>
+
+  <script>
+    const form = document.getElementById("query-form");
+    const btn = document.getElementById("submit-btn");
+    const loader = document.getElementById("loader");
+    const btnText = document.getElementById("btn-text");
+    const resultCard = document.getElementById("result");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      resultCard.classList.add("hidden");
+      btn.disabled = true;
+      btnText.textContent = "Checking...";
+      loader.classList.remove("hidden");
+
+      const formData = new FormData();
+      formData.append("description", document.getElementById("description").value);
+
+      try {
+        const response = await fetch("/api/check", {
+          method: "POST",
+          body: formData,
+        });
+        const data = await response.json();
+        console.log(data);
+        displayResult(data);
+      } catch (err) {
+        alert("Error checking interaction. Please try again.");
+      } finally {
+        btn.disabled = false;
+        btnText.textContent = "Check";
+        loader.classList.add("hidden");
+      }
+    });
+
+    function displayResult(data) {
+      document.getElementById("brand_name").textContent = data.brand_name || "-";
+      document.getElementById("generic_name").textContent = data.generic_name || "-";
+
+      const interactionsList = document.getElementById("interactions");
+      interactionsList.innerHTML = "";
+      if (data.interactions && data.interactions.length > 0) {
+        data.interactions.forEach((i) => {
+          const li = document.createElement("li");
+          li.textContent = i;
+          interactionsList.appendChild(li);
+        });
+      } else {
+        interactionsList.innerHTML = "<li>No known interactions found.</li>";
+      }
+
+      document.getElementById("answer").textContent = data.answer || "—";
+
+      resultCard.classList.remove("hidden");
+    }
+  </script>
+</body>
+</html>
